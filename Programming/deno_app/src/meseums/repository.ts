@@ -1,3 +1,4 @@
+// deno-lint-ignore-file require-await
 import { Museum, MuseumRepository } from "./index.ts";
 
 export class Repository implements MuseumRepository {

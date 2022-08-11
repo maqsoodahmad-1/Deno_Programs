@@ -1,28 +1,37 @@
 import { createServer } from "./web/index.ts";
 
-import { Controller as MuseumController, 
-         Repository as MuseumRepository,
-         } from "./meseums/index.ts"   
-         
-         const museumRepository = new MuseumRepository();
-         const museumController = new MuseumController({ museumRepository })
-         museumRepository.storage.set
-         ("1fbdd2a9-1b97-46e0-b450-62819e5772ff", {
-             id: "1fbdd2a9-1b97-46e0-b450-62819e5772ff",
-             name: "The Louvre",
-             description: "The world's largest art museum and a historic monument in Paris, France.",
-             location: {
-                 lat: "48.860294",
-                 lng: "2.33862",
-                },
-            });
-            
-            createServer({ 
-                configuration:{
-                    port: 8080
-                }
-                ,museum: museumController
-            })
+import {
+  Controller as MuseumController,
+  Repository as MuseumRepository,
+} from "./meseums/index.ts";
+
+import {
+  Controller as UserController,
+  Repository as UserRepository,
+} from "./users/index.ts";
+
+const museumRepository = new MuseumRepository();
+const museumController = new MuseumController({ museumRepository });
+
+const userRepository = new UserRepository();
+const userController = new UserController({ userRepository });
+
+museumRepository.storage.set("1fbdd2a9-1b97-46e0-b450-62819e5772ff", {
+  id: "1fbdd2a9-1b97-46e0-b450-62819e5772ff",
+  name: "The Louvre",
+  description:
+    "The world's largest art museum and a historic monument in Paris, France.",
+  location: {
+    lat: "48.860294",
+    lng: "2.33862",
+  },
+});
+
+createServer({
+  configuration: {
+    port: 8080,
+  },
+  museum: museumController,
+  user: userController,
+});
 // console.log(await museumController.getAll())
-  
-    

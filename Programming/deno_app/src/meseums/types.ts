@@ -1,4 +1,4 @@
-export type Meseum = {
+export type Museum = {
     id : string,
     name: string,
     description: string,
@@ -9,10 +9,10 @@ export type Meseum = {
     }
 }
 
-export interface MeseumController {
-    getAll: () => Promise<Meseum[]>;
+export interface MuseumController {
+    getAll: () => Promise<Museum[]>;
 }
 
 export interface MuseumRepository {
-    getAll: () => Promise<Meseum[]>
+    getAll: () => Promise<Museum[]>
 }
