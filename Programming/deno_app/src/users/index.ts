@@ -1,4 +1,6 @@
-export { Repository } from './repository.ts'
+// export { Repository } from './repository/inMemory.ts'
+export { Repository } from './repository/mongodb.ts'
+
 export { Controller } from './controller.ts'
 
 export type {

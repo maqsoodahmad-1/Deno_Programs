@@ -1,29 +1,37 @@
 import { MuseumController } from "../meseums/index.ts";
-import { Application, Router, RouterMiddleware } from "../deps.ts";
+import { Algorithm, Application, Router, jwtMiddleware } from "../deps.ts";
 import { UserController } from "../users/index.ts";
 import { _format } from "https://deno.land/std@0.140.0/path/_util.ts";
 
 interface CreateServerDependencies {
   configuration: {
     port: number;
+    authorization: {
+      key: string,
+      algorithm:Algorithm
+    }
   };
   museum: MuseumController;
   user: UserController;
 }
 
-const addTestHeaderMiddleware: RouterMiddleware = async (ctx, next) => {
-  ctx.response.headers.set("X-Test", "true");
-  await next();
-};
+// const addTestHeaderMiddleware: RouterMiddleware = async (ctx, next) => {
+//   ctx.response.headers.set("X-Test", "true");
+//   await next();
+// };
+
 
 export async function createServer({
   configuration: {
     port,
+    authorization
   },
   museum,
   user,
 }: CreateServerDependencies) {
   const app = new Application();
+  
+  const authenticated = jwtMiddleware(authorization);
 
   app.use(async (ctx, next) => {
     await next();
@@ -51,27 +59,26 @@ export async function createServer({
   const apiRouter = new Router({ prefix: "/api" });
 
   apiRouter.use(async (_, next) => {
-    console.log('Request was made to the API ROUTER');
+    console.log("Request was made to the API ROUTER");
     await next();
-    
-  })
+  });
 
-  apiRouter.get("/museums", addTestHeaderMiddleware, async (ctx) => {
+  apiRouter.get("/museums", authenticated , async (ctx) => {
     ctx.response.body = {
       museums: await museum.getAll(),
     };
   });
-  
+
   apiRouter.post("/users/register", async (ctx) => {
-    const { username, password } = await ctx.request.body({ type: 'json' })
-    .value;
-    
+    const { username, password } = await ctx.request.body({ type: "json" })
+      .value;
+
     if (!username || !password) {
       ctx.response.status = 400;
-      
+
       return;
     }
-    
+
     try {
       const createdUser = await user.register({
         username,
@@ -89,12 +96,12 @@ export async function createServer({
   apiRouter.post("/login", async (ctx) => {
     const { username, password } = await ctx.request.body().value;
     try {
-      const { user: loginUser } = await user.login({
+      const { user: loginUser, token } = await user.login({
         username,
         password,
       });
 
-      ctx.response.body = { user: loginUser };
+      ctx.response.body = { user: loginUser, token };
       ctx.response.status = 201;
     } catch (e) {
       ctx.response.body = { message: e.message };
@@ -105,9 +112,9 @@ export async function createServer({
   app.use(apiRouter.routes());
   app.use(apiRouter.allowedMethods());
 
-  // app.use((ctx) => {
-  //   ctx.response.body = "Hello World";
-  // });
+  app.use((ctx) => {
+    ctx.response.body = "Hello World";
+  });
   await app.listen({ port });
 }
 
